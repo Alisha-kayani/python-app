@@ -1,0 +1,31 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            # Navigate to project directory
+            cd /home/ubuntu/python-app
+
+
+            # Stash any local changes and pull latest changes from the same branch that triggered the workflow
+            git pull
+
+            # down containers to pick up code changes
+            sudo docker-compose down
+
+            # Wait a moment for containers to start
+            sudo docker-compose up -d --build
