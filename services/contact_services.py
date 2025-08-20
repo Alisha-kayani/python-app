@@ -16,8 +16,14 @@ async def get_contact(request:Request,collection:AsyncIOMotorCollection):
 #---------get contact by id---------------------------------------------------
 async def get_contact_by_id(request:Request,collection:AsyncIOMotorCollection,id:str):
     contact = await collection.find_one({"_id":ObjectId(id)})
+    
+    # Add a check to handle the case where the contact is not found
+    if contact is None:
+        # It's better to return something meaningful, like None,
+        # and let the controller handle the 404 response.
+        return None
+    
     return convert_object_is_to_str(contact)
-
 #-------------------------------add contact------------------------------
 async def add_contact(request:Request,collection:AsyncIOMotorCollection):
     data = await request.form()
