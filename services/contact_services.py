@@ -1,11 +1,13 @@
+
 from fastapi import Request
 from models.contact_model import Contact
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorCollection
- 
+
 #------------------------------------convert 
 def convert_object_is_to_str(contact:dict):
-    contact['_id'] = str(contact['_id'])
+    if contact is not None:
+        contact['_id'] = str(contact['_id'])
     return contact
 
 #--------------------get all contact-------------------------------------------------
@@ -16,14 +18,11 @@ async def get_contact(request:Request,collection:AsyncIOMotorCollection):
 #---------get contact by id---------------------------------------------------
 async def get_contact_by_id(request:Request,collection:AsyncIOMotorCollection,id:str):
     contact = await collection.find_one({"_id":ObjectId(id)})
-    
-    # Add a check to handle the case where the contact is not found
-    if contact is None:
-        # It's better to return something meaningful, like None,
-        # and let the controller handle the 404 response.
+    if contact is not None:
+        return convert_object_is_to_str(contact)
+    else:
         return None
-    
-    return convert_object_is_to_str(contact)
+
 #-------------------------------add contact------------------------------
 async def add_contact(request:Request,collection:AsyncIOMotorCollection):
     data = await request.form()
@@ -59,3 +58,4 @@ async def delete_contact(request:Request,collection,id:str):
     await collection.delete_one({"_id":ObjectId(id)})
     # The success message or redirect should be handled by the controller.
     return {"status": "success"} # Return a simple status or nothing
+
